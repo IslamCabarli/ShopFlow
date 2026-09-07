@@ -1,10 +1,12 @@
 # ShopFlow
 
-ShopFlow is a production-oriented e-commerce platform built to strengthen backend engineering skills through realistic business logic, scalable architecture, database design, concurrency control, caching, asynchronous processing, testing, and deployment.
+ShopFlow is a production-oriented e-commerce platform built to strengthen backend engineering skills through realistic business logic,
+scalable architecture, database design, concurrency control, caching, asynchronous processing, testing, and deployment.
 
 The project is primarily backend-focused, with a React-based frontend used to consume and demonstrate the API.
 
-The goal is not to build a simple CRUD application. ShopFlow is designed to simulate the architecture and engineering challenges of a real-world e-commerce system.
+The goal is not to build a simple CRUD application. ShopFlow is designed to simulate
+the architecture and engineering challenges of a real-world e-commerce system.
 
 ---
 
