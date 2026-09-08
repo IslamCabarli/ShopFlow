@@ -1,0 +1,72 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        container_name: shopflow_app
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - shopflow
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_started
+
+    nginx:
+        image: nginx:1.27-alpine
+        container_name: shopflow_nginx
+        restart: unless-stopped
+        ports:
+            - "${APP_PORT:-8000}:80"
+        volumes:
+            - ./:/var/www/html
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+        networks:
+            - shopflow
+        depends_on:
+            - app
+
+    postgres:
+        image: postgres:17-alpine
+        container_name: shopflow_postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE:-shopflow}
+            POSTGRES_USER: ${DB_USERNAME:-shopflow}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+        ports:
+            - "${DB_FORWARD_PORT:-5432}:5432"
+        volumes:
+            - shopflow_pgdata:/var/lib/postgresql/data
+        networks:
+            - shopflow
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-shopflow} -d ${DB_DATABASE:-shopflow}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    redis:
+        image: redis:7-alpine
+        container_name: shopflow_redis
+        restart: unless-stopped
+        ports:
+            - "${REDIS_FORWARD_PORT:-6379}:6379"
+        volumes:
+            - shopflow_redisdata:/data
+        networks:
+            - shopflow
+
+networks:
+    shopflow:
+        driver: bridge
+
+volumes:
+    shopflow_pgdata:
+        driver: local
+    shopflow_redisdata:
+        driver: local
