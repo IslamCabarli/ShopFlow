@@ -22,7 +22,7 @@ return new class extends Migration
                 ->constrained('products')
                 ->CascadeOnDelete();
 
-            $table->integer('quantity');
+            $table->unsignedInteger('quantity');
 
             $table->timestamps();
 
