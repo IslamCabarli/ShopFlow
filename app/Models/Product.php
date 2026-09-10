@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
 #[Fillable(['name', 'slug', 'description', 'sku', 'price', 'discount_price', 'status' ])]
 class Product extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {
@@ -42,7 +43,7 @@ class Product extends Model
 
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'product_categories');
     }
 
     public function cartItems(): HasMany
