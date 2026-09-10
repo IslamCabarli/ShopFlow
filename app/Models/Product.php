@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-
 #[Fillable(['name', 'slug', 'description', 'sku', 'price', 'discount_price', 'status' ])]
 class Product extends Model
 {
