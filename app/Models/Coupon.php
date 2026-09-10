@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([ 'code', 'type', 'value', 'minimum_order_amount', 'maximum_discount', 'usage_limit', 'per_user_limit' ])]
+#[Fillable([ 'code', 'type', 'value', 'minimum_order_amount', 'maximum_discount', 'usage_limit', 'per_user_limit', 'is_active' ])]
 class Coupon extends Model
 {
     use HasFactory;
