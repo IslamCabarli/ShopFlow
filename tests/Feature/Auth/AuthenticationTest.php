@@ -85,4 +85,19 @@ class AuthenticationTest extends TestCase
             'message',
         ]);
     }
+    public function test_user_cannot_login_with_invalid_credentials(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'islam@gmail.com',
+            'password' => Hash::make('Password123!'),
+        ]);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'islam@gmail.com',
+            'password' => 'PassWord123!',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email']);
+    }
 }
