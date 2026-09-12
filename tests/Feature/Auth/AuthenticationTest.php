@@ -120,4 +120,17 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_admin_can_access_admin_routes(): void
+    {
+        $user = User::factory()->admin()->create();
+
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/v1/admin-test');
+
+        $response->assertStatus(200);
+    }
 }
