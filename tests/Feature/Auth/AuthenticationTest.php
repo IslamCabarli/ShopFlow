@@ -51,6 +51,18 @@ class AuthenticationTest extends TestCase
         $response->assertJsonValidationErrors(['email']);
     }
 
+    public function test_user_cannot_register_with_invalid_password(): void
+    {
+        $response = $this->postJson('/api/v1/auth/register',[
+            'name' => 'islam',
+            'email' => 'islam@gmail.com',
+            'password' => '12345678',
+            'password_confirmation' => '12345678',
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['password']);
+
+    }
     public function test_user_can_login(): void
     {
         $user = User::factory()->create([
