@@ -100,4 +100,11 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['email']);
     }
+
+    public function test_unauthenticated_user_cannot_access_me(): void
+    {
+        $response = $this->getJson('/api/v1/auth/me');
+
+        $response->assertStatus(401);
+    }
 }
