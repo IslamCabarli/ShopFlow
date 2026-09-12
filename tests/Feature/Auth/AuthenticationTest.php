@@ -36,6 +36,21 @@ class AuthenticationTest extends TestCase
         ]);
     }
 
+    public function test_user_cannot_register_with_duplicate_email(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'islam@gmail.com'
+        ]);
+        $response = $this->postJson('/api/v1/auth/register',[
+            'name' => 'islam',
+            'email' => 'islam@gmail.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email']);
+    }
+
     public function test_user_can_login(): void
     {
         $user = User::factory()->create([
