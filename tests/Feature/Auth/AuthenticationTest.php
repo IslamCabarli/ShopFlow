@@ -107,4 +107,17 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_non_admin_user_cannot_access_admin_routes(): void
+    {
+        $user = User::factory()->create();
+
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/v1/admin-test');
+
+        $response->assertStatus(403);
+    }
 }
