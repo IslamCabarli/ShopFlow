@@ -4,6 +4,8 @@ namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -25,6 +27,29 @@ class AuthenticationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'islam@gmail.com',
         ]);
+        $response->assertJsonStructure([
+            'data' => [
+                'user',
+                'token',
+            ],
+            'message',
+        ]);
+    }
+
+    public function test_user_can_login(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'islam@gmail.com',
+            'password' => Hash::make('Password123!'),
+        ]);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'Password123!',
+        ]);
+
+        $response->assertStatus(200);
+
         $response->assertJsonStructure([
             'data' => [
                 'user',
