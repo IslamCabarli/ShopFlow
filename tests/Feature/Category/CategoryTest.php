@@ -183,4 +183,18 @@ class CategoryTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['slug']);
     }
+
+    public function test_categories_are_paginated(): void
+    {
+        Category::factory()->count(20)->create();
+
+        $response = $this->getJson('/api/v1/categories');
+
+        $response->assertStatus(200);
+
+        $response->assertJsonPath('meta.current_page', 1);
+        $response->assertJsonPath('meta.per_page', 15);
+        $response->assertJsonPath('meta.total', 20);
+        $response->assertJsonPath('meta.last_page', 2);
+    }
 }
