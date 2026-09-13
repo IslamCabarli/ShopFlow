@@ -21,4 +21,24 @@ class CategoryTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+
+    public function test_guest_can_view_category(): void
+    {
+        $category = Category::factory()->create();
+
+        $response = $this->getJson("/api/v1/categories/{$category->id}");
+
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'slug',
+                'created_at',
+            ],
+            'message',
+        ]);
+        $response->assertStatus(200);
+
+    }
 }
