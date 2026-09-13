@@ -151,4 +151,17 @@ class CategoryTest extends TestCase
             'id' => $category->id,
         ]);
     }
+
+    public function test_non_admin_cannot_delete_category(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+        $category = Category::factory()->create();
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->deleteJson("/api/v1/categories/{$category->id}");
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('categories', [
+            'id' => $category->id,
+        ]);
+    }
 }
