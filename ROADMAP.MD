@@ -6,7 +6,7 @@ The project is intentionally divided into weekly milestones so that every featur
 
 The goal is:
 
-```text
+`
 Learn Concept
      ↓
 Design
@@ -18,7 +18,7 @@ Test
 Refactor
      ↓
 Document
-```
+`
 
 ---
 
@@ -56,17 +56,17 @@ Understand:
 
 Set up:
 
-```text
+`
 Laravel
 PostgreSQL
 Redis
 Docker
 Git
-```
+`
 
 Create initial database schema:
 
-```text
+`
 users
 products        (with soft deletes, correct price column type)
 categories
@@ -80,7 +80,7 @@ inventories
 coupons
 coupon_usages
 reviews
-```
+`
 
 Create:
 
@@ -127,15 +127,16 @@ Verify:
 
 Understand:
 
-```text
+`
 Authentication
 =
 Who are you?
-
+`
+`
 Authorization
 =
 What are you allowed to do?
-```
+`
 
 Study:
 
@@ -150,12 +151,12 @@ Study:
 
 Endpoints:
 
-```text
+`
 POST /api/v1/auth/register
 POST /api/v1/auth/login
 POST /api/v1/auth/logout
 GET  /api/v1/auth/me
-```
+`
 
 Implement:
 
