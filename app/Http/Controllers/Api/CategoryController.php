@@ -9,7 +9,6 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
