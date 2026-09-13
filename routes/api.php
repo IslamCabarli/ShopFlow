@@ -14,4 +14,4 @@
             Route::get('me', [AuthController::class, 'me']);
         });
     });
-    Route::get('v1/admin-test', fn () => 'admin is okay')->middleware(['auth:sanctum', 'admin']);
+
