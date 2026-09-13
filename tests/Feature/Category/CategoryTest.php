@@ -164,4 +164,23 @@ class CategoryTest extends TestCase
             'id' => $category->id,
         ]);
     }
+
+    public function test_category_slug_must_be_unique(): void
+    {
+        $category = Category::factory()->create([
+            'slug' => 'electronics'
+        ]);
+
+        $user = User::factory()->admin()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson("/api/v1/categories", [
+                'name' => 'Another Category',
+                'slug' => $category->slug,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['slug']);
+    }
 }
