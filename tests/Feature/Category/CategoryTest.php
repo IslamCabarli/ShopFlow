@@ -138,4 +138,17 @@ class CategoryTest extends TestCase
             'slug' => $category->slug,
         ]);
     }
+
+    public function test_admin_can_delete_category(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('test-token')->plainTextToken;
+        $category = Category::factory()->create();
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->deleteJson("/api/v1/categories/{$category->id}");
+        $response->assertStatus(200);
+        $this->assertSoftDeleted('categories', [
+            'id' => $category->id,
+        ]);
+    }
 }
