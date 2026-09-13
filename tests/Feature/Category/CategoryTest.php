@@ -68,4 +68,24 @@ class CategoryTest extends TestCase
 
 
     }
+
+    public function test_non_admin_user_cannot_create_category(): void
+    {
+        $name = $this->faker->name();
+        $slug = $this->faker->slug();
+        $user = User::factory()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/v1/categories', [
+                'name' => $name,
+                'slug' => $slug,
+            ]);
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('categories', [
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+
+
+    }
 }
