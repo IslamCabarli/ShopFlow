@@ -3,6 +3,7 @@
 namespace Tests\Feature\Category;
 
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -39,6 +40,32 @@ class CategoryTest extends TestCase
             'message',
         ]);
         $response->assertStatus(200);
+    }
+
+    public function test_admin_can_create_category(): void
+    {
+        $name = $this->faker->name();
+        $slug = $this->faker->slug();
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('test-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/v1/categories', [
+                'name' => $name,
+                'slug' => $slug,
+            ]);
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+           'data' => [
+               'name',
+               'slug'
+           ]
+        ]);
+        $this->assertDatabaseHas('categories', [
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+
 
     }
 }
