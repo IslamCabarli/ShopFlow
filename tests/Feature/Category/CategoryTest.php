@@ -88,4 +88,32 @@ class CategoryTest extends TestCase
 
 
     }
+
+    public function test_admin_can_update_category(): void
+    {
+        $name = $this->faker->name();
+        $slug = $this->faker->slug();
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('test-token')->plainTextToken;
+        $category = Category::factory()->create();
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->putJson("/api/v1/categories/{$category->id}", [
+                'name' =>$name,
+                'slug' => $slug,
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                'name',
+                'slug',
+            ]
+        ]);
+
+        $this->assertDatabaseHas('categories', [
+            'id' => $category->id,
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+    }
 }
