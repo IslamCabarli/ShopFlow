@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Product;
 
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -47,5 +48,35 @@ class ProductTest extends TestCase
 
             ]
         );
+    }
+
+    public function test_admin_can_update_product(): void
+    {
+        $product = Product::factory()->create();
+        $name =$this->faker->word;
+        $description =$this->faker->text;
+        $slug =$this->faker->slug;
+        $sku =$this->faker->word;
+        $status = $this->faker->randomElement(['active','inactive']);
+        $price =$this->faker->randomFloat(10,2);
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->putJson("/api/v1/products/{$product->id}",
+            [
+                'name' => $name,
+                'description' => $description,
+                'slug' => $slug,
+                'sku' => $sku,
+                'status'=>$status,
+                'price' => $price,
+            ]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+
     }
 }
