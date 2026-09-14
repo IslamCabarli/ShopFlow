@@ -278,5 +278,31 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function  test_soft_deleted_products_are_excluded_from_listing(): void
+    {
+        $productA = Product::factory()->create();
+        $productB = Product::factory()->create();
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('admin')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->deleteJson("/api/v1/products/{$productA->id}");
+
+        $response->assertStatus(200);
+
+        $response = $this->getJson('/api/v1/products');
+
+        $response->assertStatus(200);
+
+        $response->assertJsonMissing([
+            'id' => $productA->id,
+        ]);
+
+        $response->assertJsonFragment([
+            'id' => $productB->id,
+        ]);
+
+    }
+
 
 }
