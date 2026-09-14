@@ -203,4 +203,27 @@ class ProductTest extends TestCase
             $productA->id,
         ], array_column($data, 'id'));
     }
+
+    public function test_products_can_be_searched(): void
+    {
+        $productA = Product::factory()->create([
+            'name' => 'iPhone 15 Pro',
+        ]);
+
+        $productB = Product::factory()->create([
+            'name' => 'Samsung Galaxy S24',
+        ]);
+
+        $response = $this->getJson('/api/v1/products?search=iPhone');
+        $response->assertStatus(200);
+
+        $response->assertJsonFragment([
+            'name' => $productA->name,
+        ]);
+        $response->assertJsonMissing([
+            'name' => $productB->name,
+        ]);
+
+
+    }
 }
