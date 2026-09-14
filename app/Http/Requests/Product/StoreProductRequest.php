@@ -28,6 +28,7 @@ class StoreProductRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'slug' => ['nullable', 'string', 'max:100', 'unique:products,slug'],
             'sku' => ['required', 'string', 'max:100', 'unique:products,sku'],
+            'quantity' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'numeric'],
             'status' => ['required',Rule::in(['active', 'inactive', 'draft'])],
             'discount_price' => ['nullable', 'numeric', 'lt:price'],
