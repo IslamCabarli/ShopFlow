@@ -93,4 +93,21 @@ class ProductTest extends TestCase
             'id' => $product->id,
         ]);
     }
+
+    public function test_product_can_be_retrieved(): void
+    {
+        $product = Product::factory()->create();
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson("/api/v1/products/{$product->id}");
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+        ]);
+
+
+    }
 }
