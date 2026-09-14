@@ -136,4 +136,25 @@ class ProductTest extends TestCase
             ]
         ]);
     }
+
+    public function test_products_are_paginated(): void
+    {
+        Product::factory(20)->create();
+        $response = $this->getJson("/api/v1/products");
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [],
+            'meta' =>
+                [
+                    'current_page',
+                    'last_page',
+                    'per_page',
+                    'total'
+                ],
+            'message'
+        ]);
+        $response->assertJsonPath('meta.per_page', 15);
+        $response->assertJsonPath('meta.total', 20);
+    }
+
 }
