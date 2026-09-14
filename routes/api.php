@@ -2,6 +2,7 @@
 
     use App\Http\Controllers\Api\AuthController;
     use App\Http\Controllers\Api\CategoryController;
+    use App\Http\Controllers\Api\ProductController;
     use Illuminate\Support\Facades\Route;
 
     Route::prefix('v1/auth')->group(function () {
@@ -22,11 +23,21 @@
             Route::get('/{category}', [CategoryController::class, 'show']);
         });
 
-
-
         Route::middleware(['auth:sanctum', 'admin','throttle:30,1'])->group(function () {
             Route::post('/', [CategoryController::class, 'store']);
             Route::put('/{category}',[CategoryController::class, 'update']);
             Route::delete('/{category}',[CategoryController::class, 'destroy']);
+        });
+    });
+
+    Route::prefix('v1/products')->group(function () {
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::get('/', [ProductController::class, 'index']);
+            Route::get('/{product}', [ProductController::class, 'show']);
+        });
+        Route::middleware(['auth:sanctum', 'admin','throttle:30,1'])->group(function () {
+            Route::post('/', [ProductController::class, 'store']);
+            Route::put('/{product}',[ProductController::class, 'update']);
+            Route::delete('/{product}',[ProductController::class, 'destroy']);
         });
     });
