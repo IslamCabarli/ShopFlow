@@ -263,4 +263,20 @@ class ProductTest extends TestCase
             'slug' => $product->slug,
         ]);
     }
+
+    public function test_non_admin_cannot_delete_product(): void
+    {
+        $product = Product::factory()->create();
+        $user = User::factory()->create();
+        $token = $user->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->deleteJson("/api/v1/products/{$product->id}");
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+        ]);
+    }
+
+
 }
