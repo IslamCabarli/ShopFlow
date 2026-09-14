@@ -185,4 +185,22 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function test_products_can_be_sorted(): void
+    {
+        $productA = Product::factory()->create(['price' => 300]);
+        $productB = Product::factory()->create(['price' => 100]);
+        $productC = Product::factory()->create(['price' => 200]);
+
+        $response = $this->getJson('/api/v1/products?sort=price_asc');
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+
+        $this->assertSame([
+            $productB->id,
+            $productC->id,
+            $productA->id,
+        ], array_column($data, 'id'));
+    }
 }
