@@ -223,7 +223,24 @@ class ProductTest extends TestCase
         $response->assertJsonMissing([
             'name' => $productB->name,
         ]);
+    }
 
+    public function  test_non_admin_cannot_create_product(): void
+    {
+        $name = $this->faker->name();
+        $slug = $this->faker->slug();
+        $user = User::factory()->create();
+        $token = $user->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/v1/products',[
+                'name' => $name,
+                'slug' => $slug
+            ]);
 
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('products', [
+            'name' => $name,
+            'slug' => $slug,
+        ]);
     }
 }
