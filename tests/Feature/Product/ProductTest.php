@@ -243,4 +243,24 @@ class ProductTest extends TestCase
             'slug' => $slug,
         ]);
     }
+
+    public function test_non_admin_cannot_update_product(): void
+    {
+        $name = $this->faker->name();
+        $slug = $this->faker->slug();
+        $product = Product::factory()->create();
+        $user = User::factory()->create();
+        $token = $user->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->putJson("/api/v1/products/{$product->id}",[
+                'name' => $name,
+                'slug' => $slug,
+            ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('products', [
+            'name' => $product->name,
+            'slug' => $product->slug,
+        ]);
+    }
 }
