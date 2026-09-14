@@ -3,6 +3,7 @@
 namespace Tests\Feature\Product;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -155,6 +156,33 @@ class ProductTest extends TestCase
         ]);
         $response->assertJsonPath('meta.per_page', 15);
         $response->assertJsonPath('meta.total', 20);
+    }
+
+    public function test_products_can_be_filtered(): void
+    {
+        $categoryA = Category::factory()->create();
+        $categoryB = Category::factory()->create();
+
+        $productA = Product::factory()->create();
+        $productB = Product::factory()->create();
+
+        $productA->categories()->attach($categoryA);
+        $productB->categories()->attach($categoryB);
+
+        $response = $this->getJson(
+            "/api/v1/products?category={$categoryA->id}"
+        );
+
+        $response->assertStatus(200);
+
+
+        $response->assertJsonFragment([
+            'id' => $productA->id,
+        ]);
+
+        $response->assertJsonMissing([
+            'id' => $productB->id,
+        ]);
     }
 
 }
