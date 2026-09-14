@@ -85,8 +85,6 @@ class CategoryTest extends TestCase
             'name' => $name,
             'slug' => $slug,
         ]);
-
-
     }
 
     public function test_admin_can_update_category(): void
