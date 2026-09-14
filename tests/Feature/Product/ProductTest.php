@@ -110,4 +110,30 @@ class ProductTest extends TestCase
 
 
     }
+
+    public function test_product_validation(): void
+    {
+        $product = Product::factory()->create();
+        $admin = User::factory()->admin()->create();
+        $token = $admin->createToken('admin')->plainTextToken;
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson("/api/v1/products",[
+                'name' => '',
+                'description' => 1233,
+                'sku' => '',
+                'status'=>'',
+                'price' => '',
+            ]);
+        $response->assertStatus(422);
+        $response->assertJsonStructure([
+            'message',
+            'errors' => [
+                'name',
+                'description',
+                'sku',
+                'status',
+                'price',
+            ]
+        ]);
+    }
 }
