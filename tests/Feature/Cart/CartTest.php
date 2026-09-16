@@ -140,4 +140,28 @@ class CartTest extends TestCase
             'id' => $item->id,
         ]);
     }
+
+    public function test_clear_cart(): void
+    {
+        $user = User::factory()->create();
+
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 10,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ]);
+
+        $this->deleteJson('/api/v1/cart');
+
+        $this->assertDatabaseCount('cart_items', 0);
+    }
 }
