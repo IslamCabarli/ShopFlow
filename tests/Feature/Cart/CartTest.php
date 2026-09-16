@@ -337,4 +337,11 @@ class CartTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['product_id']);
     }
+
+    public function test_unauthenticated_user_cannot_access_cart(): void
+    {
+        $response = $this->getJson('/api/v1/cart');
+
+        $response->assertStatus(401);
+    }
 }
