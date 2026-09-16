@@ -41,4 +41,38 @@ class CartTest extends TestCase
             'quantity' => 2,
         ]);
     }
+
+    public function test_add_existing_product_updates_quantity(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 10,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ])->assertStatus(201);
+
+        $response = $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 3,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.quantity', 5);
+
+        $this->assertDatabaseCount('cart_items', 1);
+
+        $this->assertDatabaseHas('cart_items', [
+            'product_id' => $product->id,
+            'quantity' => 5,
+        ]);
+    }
 }
