@@ -236,4 +236,28 @@ class CartTest extends TestCase
             'id' => $item->id,
         ]);
     }
+
+    public function test_add_item_with_invalid_quantity(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 10,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 0,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['quantity']);
+
+        $this->assertDatabaseCount('cart_items', 0);
+    }
 }
