@@ -13,7 +13,7 @@
                 'id' => $this->id,
                 'user_id' => $this->user_id,
                 'items' => CartItemResource::collection(
-                    $this->whenLoaded('items')
+                    $this->whenLoaded('cartItems')
                 ),
             ];
         }

@@ -28,7 +28,7 @@
             $cart = $this->cartService
                 ->getOrCreateCart($request->user());
 
-            $cart->load('items.product');
+            $cart->load('cartItems.product');
 
             return $this->success(
                 new CartResource($cart)
