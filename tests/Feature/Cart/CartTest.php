@@ -75,4 +75,38 @@ class CartTest extends TestCase
             'quantity' => 5,
         ]);
     }
+
+    public function test_update_item_quantity(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 10,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ]);
+
+        $item = $user->cart->cartItems()->first();
+
+        $response = $this->patchJson(
+            "/api/v1/cart/items/{$item->id}",
+            ['quantity' => 5]
+        );
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.quantity', 5);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $item->id,
+            'quantity' => 5,
+        ]);
+    }
 }
