@@ -113,12 +113,16 @@ class AuthenticationTest extends TestCase
     public function test_non_admin_user_cannot_access_admin_routes(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
-        $token = $user->createToken('test-token')->plainTextToken;
 
-        $response = $this
-            ->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson("/api/v1/products/{$product->id}");
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/products', [
+            'name' => 'Test Product',
+            'slug' => 'test-product',
+            'sku' => 'TEST-001',
+            'price' => 100,
+            'status' => 'active',
+        ]);
 
         $response->assertStatus(403);
     }
