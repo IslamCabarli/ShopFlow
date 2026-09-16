@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -111,12 +113,12 @@ class AuthenticationTest extends TestCase
     public function test_non_admin_user_cannot_access_admin_routes(): void
     {
         $user = User::factory()->create();
-
+        $product = Product::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this
             ->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/admin-test');
+            ->getJson("/api/v1/products/{$product->id}");
 
         $response->assertStatus(403);
     }
@@ -124,13 +126,18 @@ class AuthenticationTest extends TestCase
     public function test_admin_can_access_admin_routes(): void
     {
         $user = User::factory()->admin()->create();
+        $product = Product::factory()->create();
 
-        $token = $user->createToken('test-token')->plainTextToken;
+        Sanctum::actingAs($user);
 
-        $response = $this
-            ->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/admin-test');
+        $response = $this->postJson('/api/v1/products', [
+            'name' => 'Test Product',
+            'slug' => 'test-product',
+            'sku' => 'TEST-001',
+            'price' => 100,
+            'status' => 'active',
+        ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
     }
 }
