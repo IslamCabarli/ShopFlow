@@ -3,6 +3,7 @@
     use App\Http\Controllers\Api\AuthController;
     use App\Http\Controllers\Api\CategoryController;
     use App\Http\Controllers\Api\ProductController;
+    use App\Http\Controllers\Api\CartController;
     use Illuminate\Support\Facades\Route;
 
     Route::prefix('v1/auth')->group(function () {
@@ -40,4 +41,12 @@
             Route::put('/{product}',[ProductController::class, 'update']);
             Route::delete('/{product}',[ProductController::class, 'destroy']);
         });
+    });
+
+    Route::prefix('v1/cart')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+        Route::get('/', [CartController::class, 'index']);
+        Route::post('/items', [CartController::class, 'storeItem']);
+        Route::patch('/items/{item}', [CartController::class, 'updateItem']);
+        Route::delete('/items/{item}', [CartController::class, 'destroyItem']);
+        Route::delete('/', [CartController::class, 'clear']);
     });
