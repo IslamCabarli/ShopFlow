@@ -322,4 +322,19 @@ class CartTest extends TestCase
             'quantity' => 2,
         ]);
     }
+
+    public function test_cannot_add_non_existing_product(): void
+    {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/cart/items', [
+            'product_id' => 999999,
+            'quantity' => 2,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['product_id']);
+    }
 }
