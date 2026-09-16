@@ -2,7 +2,7 @@
 
     namespace App\Http\Controllers\Api;
 
-    use App\Exceptions\InsufficientStockException;
+
     use App\Http\Controllers\Controller;
     use App\Http\Requests\Cart\StoreCartItemRequest;
     use App\Http\Requests\Cart\UpdateCartItemRequest;
@@ -11,7 +11,7 @@
     use App\Models\CartItem;
     use App\Models\Product;
     use App\Services\CartService;
-    use App\Traits\ApiResponse;
+    use App\Http\Traits\ApiResponse;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
 
