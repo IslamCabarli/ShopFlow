@@ -286,4 +286,40 @@ class CartTest extends TestCase
 
         $this->assertDatabaseCount('cart_items', 0);
     }
+
+    public function test_cannot_update_item_when_quantity_exceeds_available_stock(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 5,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ]);
+
+        $item = $user->cart->cartItems()->first();
+
+        $response = $this->patchJson(
+            "/api/v1/cart/items/{$item->id}",
+            ['quantity' => 6]
+        );
+
+        $response->assertStatus(409)
+            ->assertJson([
+                'message' => 'Insufficient stock for this product.',
+            ]);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $item->id,
+            'quantity' => 2,
+        ]);
+    }
 }
