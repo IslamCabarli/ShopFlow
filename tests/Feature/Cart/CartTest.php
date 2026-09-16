@@ -164,4 +164,41 @@ class CartTest extends TestCase
 
         $this->assertDatabaseCount('cart_items', 0);
     }
+
+    public function test_user_cannot_update_another_users_cart_item(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 10,
+            'reserved_quantity' => 0,
+        ]);
+
+        Sanctum::actingAs($owner);
+
+        $this->postJson('/api/v1/cart/items', [
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ]);
+
+        $item = $owner->cart->cartItems()->first();
+
+        Sanctum::actingAs($otherUser);
+
+        $response = $this->patchJson(
+            "/api/v1/cart/items/{$item->id}",
+            ['quantity' => 5]
+        );
+
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $item->id,
+            'quantity' => 2,
+        ]);
+    }
 }
