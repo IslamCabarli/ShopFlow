@@ -5,6 +5,7 @@
     use App\Http\Controllers\Api\ProductController;
     use App\Http\Controllers\Api\CartController;
     use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\Api\CheckoutController;
 
     Route::prefix('v1/auth')->group(function () {
         Route::middleware('throttle:5,1')->group(function () {
@@ -50,3 +51,9 @@
         Route::delete('/items/{item}', [CartController::class, 'destroyItem']);
         Route::delete('/', [CartController::class, 'clear']);
     });
+
+    Route::prefix('v1')
+        ->middleware(['auth:sanctum', 'throttle:30,1'])
+        ->group(function () {
+            Route::post('/checkout', [CheckoutController::class, 'store']);
+        });
