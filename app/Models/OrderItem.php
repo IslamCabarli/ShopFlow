@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
-#[Fillable(['product_name', 'product_sku', 'unit_price', 'quantity',])]
+#[Fillable(['product_id', 'product_name', 'product_sku', 'unit_price', 'quantity', 'subtotal'])]
 
 class OrderItem extends Model
 {
