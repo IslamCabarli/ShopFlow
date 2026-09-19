@@ -5,11 +5,14 @@
     use App\Http\Controllers\Controller;
     use App\Http\Requests\CheckoutRequest;
     use App\Http\Resources\OrderResource;
+    use App\Http\Traits\ApiResponse;
     use App\Services\CheckoutService;
     use Illuminate\Http\JsonResponse;
 
     class CheckoutController extends Controller
     {
+        use ApiResponse;
+
         public function __construct(
             protected CheckoutService $checkoutService
         ) {}
@@ -21,9 +24,10 @@
                 $request->validated()
             );
 
-            return response()->json([
-                'message' => 'Checkout completed successfully.',
-                'data' => new OrderResource($order),
-            ], 201);
+            return $this->success(
+                new OrderResource($order),
+                'Checkout completed successfully.',
+                201
+            );
         }
     }
