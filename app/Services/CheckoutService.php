@@ -70,6 +70,10 @@
                         'subtotal' => $itemSubtotal,
                     ]);
 
+                    $inventory->update([
+                        'quantity' => $inventory->quantity - $item->quantity,
+                    ]);
+
                     $subtotal += $itemSubtotal;
                 }
 
