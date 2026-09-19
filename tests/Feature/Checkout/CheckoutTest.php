@@ -90,5 +90,10 @@
             ]);
 
             $this->assertDatabaseCount('cart_items', 0);
+
+            $this->assertDatabaseHas('inventories', [
+                'product_id' => $product->id,
+                'quantity' => 8,
+            ]);
         }
     }
