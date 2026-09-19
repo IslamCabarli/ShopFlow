@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
-#[Fillable([ 'amount', 'provider' ])]
+#[Fillable(['order_id', 'amount', 'status', 'provider', 'transaction_id' ])]
 class Payment extends Model
 {
     use HasFactory;
