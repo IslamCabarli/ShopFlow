@@ -18,7 +18,7 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             $table->string('order_number', 50)
-                ->unique();
+                ->nullable()->unique();
             $table->string('status', 50);
             $table->string('payment_status', 50);
 
