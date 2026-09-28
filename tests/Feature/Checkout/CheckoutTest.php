@@ -96,4 +96,16 @@
                 'quantity' => 8,
             ]);
         }
+
+
+        private function shippingData(): array
+        {
+            return [
+                'shipping_name' => 'Test User',
+                'shipping_address' => 'Test Address 123',
+                'shipping_city' => 'Baku',
+                'shipping_country' => 'Azerbaijan',
+                'shipping_postal_code' => 'AZ1000',
+            ];
+        }
     }
