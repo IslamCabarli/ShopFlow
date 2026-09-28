@@ -157,6 +157,47 @@
             $this->assertDatabaseCount('orders', 0);
         }
 
+        public function test_checkout_rolls_back_all_stock_changes_when_one_item_fails(): void
+        {
+            $user = User::factory()->create();
+
+
+            $productA = $this->createProductWithStock(stock: 10);
+            $productB = $this->createProductWithStock(stock: 1);
+
+            $cart = Cart::factory()->create(['user_id' => $user->id]);
+
+            $cart->cartItems()->create([
+                'product_id' => $productA->id,
+                'quantity' => 2,
+            ]);
+            $cart->cartItems()->create([
+                'product_id' => $productB->id,
+                'quantity' => 5,
+            ]);
+
+            Sanctum::actingAs($user);
+
+            $response = $this->postJson('/api/v1/checkout', $this->shippingData());
+
+            $response->assertStatus(409);
+
+
+            $this->assertDatabaseHas('inventories', [
+                'product_id' => $productA->id,
+                'quantity' => 10,
+            ]);
+            $this->assertDatabaseHas('inventories', [
+                'product_id' => $productB->id,
+                'quantity' => 1,
+            ]);
+
+            $this->assertDatabaseCount('orders', 0);
+            $this->assertDatabaseCount('order_items', 0);
+            $this->assertDatabaseCount('payments', 0);
+            $this->assertDatabaseCount('cart_items', 2);
+        }
+
 
         private function createProductWithStock(int $stock): Product
         {
