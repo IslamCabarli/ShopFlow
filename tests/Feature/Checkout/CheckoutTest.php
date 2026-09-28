@@ -144,6 +144,18 @@
             $this->assertDatabaseCount('orders', 1);
         }
 
+        public function test_checkout_fails_with_empty_cart(): void
+        {
+            $user = User::factory()->create();
+            Cart::factory()->create(['user_id' => $user->id]);
+
+            Sanctum::actingAs($user);
+
+            $response = $this->postJson('/api/v1/checkout', $this->shippingData());
+
+            $response->assertStatus(409);
+            $this->assertDatabaseCount('orders', 0);
+        }
 
 
         private function createProductWithStock(int $stock): Product
