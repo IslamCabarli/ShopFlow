@@ -97,6 +97,22 @@
             ]);
         }
 
+        private function createProductWithStock(int $stock): Product
+        {
+            $product = Product::factory()->create([
+                'price' => 100,
+                'discount_price' => null,
+            ]);
+
+            Inventory::factory()->create([
+                'product_id' => $product->id,
+                'quantity' => $stock,
+                'reserved_quantity' => 0,
+            ]);
+
+            return $product;
+        }
+
 
         private function shippingData(): array
         {
