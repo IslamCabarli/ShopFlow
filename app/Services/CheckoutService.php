@@ -47,7 +47,9 @@
 
                 $subtotal = 0;
 
-                foreach ($cart->cartItems as $item) {
+                // Always lock inventory rows in the same order (by product_id)
+                // so two concurrent checkouts can never deadlock each other.
+                foreach ($cart->cartItems->sortBy('product_id') as $item) {
                     $product = $item->product;
 
                     // Row-level lock: other transactions wait here until we commit/rollback
