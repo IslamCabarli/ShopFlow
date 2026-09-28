@@ -4,6 +4,7 @@
 
     use App\Exceptions\EmptyCartException;
     use App\Exceptions\InsufficientStockException;
+    use App\Models\Inventory;
     use App\Models\Order;
     use App\Models\Payment;
     use App\Models\User;
@@ -15,7 +16,7 @@
         public function checkout(User $user, array $shippingData): Order
         {
             $cart = $user->cart()
-                ->with('cartItems.product.inventory')
+                ->with('cartItems.product')
                 ->first();
 
             if (!$cart || $cart->cartItems->isEmpty()) {
@@ -48,7 +49,11 @@
 
                 foreach ($cart->cartItems as $item) {
                     $product = $item->product;
-                    $inventory = $product->inventory;
+
+                    // Row-level lock: other transactions wait here until we commit/rollback
+                    $inventory = Inventory::where('product_id', $product->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
 
                     $availableStock = $inventory->quantity - $inventory->reserved_quantity;
 
