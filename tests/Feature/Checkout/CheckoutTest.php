@@ -39,13 +39,7 @@
 
             Sanctum::actingAs($user);
 
-            $response = $this->postJson('/api/v1/checkout', [
-                'shipping_name' => 'Test User',
-                'shipping_address' => 'Test Address 123',
-                'shipping_city' => 'Baku',
-                'shipping_country' => 'Azerbaijan',
-                'shipping_postal_code' => 'AZ1000',
-            ]);
+            $response = $this->postJson('/api/v1/checkout', $this->shippingData());
 
             $response->assertStatus(201);
 
@@ -96,6 +90,36 @@
                 'quantity' => 8,
             ]);
         }
+        public function test_checkout_fails_when_stock_is_insufficient(): void
+        {
+            $user = User::factory()->create();
+            $product = $this->createProductWithStock(stock: 1);
+            $cart = Cart::factory()->create(['user_id' => $user->id]);
+
+            $cart->cartItems()->create([
+                'product_id' => $product->id,
+                'quantity' => 2,
+            ]);
+
+            Sanctum::actingAs($user);
+
+            $response = $this->postJson('/api/v1/checkout', $this->shippingData());
+
+            $response->assertStatus(409);
+
+            // Rollback: the order created inside the transaction must not exist
+            $this->assertDatabaseCount('orders', 0);
+            $this->assertDatabaseCount('order_items', 0);
+            $this->assertDatabaseCount('payments', 0);
+
+            // Inventory untouched, cart untouched
+            $this->assertDatabaseHas('inventories', [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
+            $this->assertDatabaseCount('cart_items', 1);
+        }
+
 
         private function createProductWithStock(int $stock): Product
         {
