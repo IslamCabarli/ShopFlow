@@ -55,7 +55,12 @@
 
             // Simulate another process having already updated this row
             // (its own write bumped the version) before ours runs.
-            $inventory->update(['quantity' => 8, 'version' => 1]);
+            // Direct attribute assignment + save() bypasses mass-assignment
+            // protection, which update() would silently respect (version isn't
+            // fillable — and shouldn't be, for real API requests).
+            $inventory->quantity = 8;
+            $inventory->version = 1;
+            $inventory->save();
 
             $service = new OptimisticInventoryService();
             // Our service will re-read the row fresh at the start of its loop,
