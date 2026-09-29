@@ -9,17 +9,29 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
     use ApiResponse;
+
+    private const CACHE_TTL = 300; // 5 minutes
+
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::paginate(15);
+        $cacheKey = 'categories:index:' . $request->query('page', 1);
+
+        $categories = Cache::tags(['categories'])->remember(
+            $cacheKey,
+            self::CACHE_TTL,
+            fn () => Category::paginate(15)
+        );
+
         return $this->successPaginated(
             CategoryResource::collection($categories),
             'Categories retrieved successfully'
@@ -35,6 +47,9 @@ class CategoryController extends Controller
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
         $category = Category::create($data);
+
+        Cache::tags(['categories'])->flush();
+
         return $this->success(
             new CategoryResource($category),
             'Category created successfully',
@@ -47,9 +62,16 @@ class CategoryController extends Controller
      */
     public function show(Category $category): JsonResponse
     {
+        $cacheKey = "categories:show:{$category->id}";
+
+        $category = Cache::tags(['categories'])->remember(
+            $cacheKey,
+            self::CACHE_TTL,
+            fn () => $category
+        );
+
         return $this->success(new CategoryResource($category));
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -61,11 +83,12 @@ class CategoryController extends Controller
 
         $category->update($data);
 
+        Cache::tags(['categories'])->flush();
+
         return $this->success(
             new CategoryResource($category),
             'Category updated successfully'
         );
-
     }
 
     /**
@@ -74,6 +97,8 @@ class CategoryController extends Controller
     public function destroy(Category $category): JsonResponse
     {
         $category->delete();
+
+        Cache::tags(['categories'])->flush();
 
         return $this->success(
             message: 'Category deleted successfully'
