@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Checkout;
 
+use App\Mail\OrderConfirmationMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Jobs\SendOrderConfirmationJob;
@@ -24,5 +25,18 @@ class CheckoutJobsTest extends TestCase
         Queue::assertPushed(SendOrderConfirmationJob::class);
         Queue::assertPushed(GenerateInvoiceJob::class);
         Queue::assertPushed(NotifyAdminJob::class);
+    }
+    public function test_send_order_confirmation_job_sends_mail(): void
+    {
+        Mail::fake();
+
+        $order = $this->createOrderWithItems();
+
+        (new SendOrderConfirmationJob($order->id))->handle();
+
+        Mail::assertSent(
+            OrderConfirmationMail::class,
+            fn ($mail) => $mail->order->id === $order->id
+        );
     }
 }
