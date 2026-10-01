@@ -27,6 +27,7 @@ class CheckoutJobsTest extends TestCase
         Queue::assertPushed(GenerateInvoiceJob::class);
         Queue::assertPushed(NotifyAdminJob::class);
     }
+
     public function test_send_order_confirmation_job_sends_mail(): void
     {
         Mail::fake();
@@ -40,17 +41,29 @@ class CheckoutJobsTest extends TestCase
             fn ($mail) => $mail->order->id === $order->id
         );
     }
+
     public function test_job_throws_for_nonexistent_order(): void
     {
         $this->expectException(ModelNotFoundException::class);
 
         (new SendOrderConfirmationJob(999999))->handle();
     }
+
     public function test_jobs_have_retry_and_backoff_configured(): void
     {
         $job = new GenerateInvoiceJob(1);
 
         $this->assertEquals(3, $job->tries);
         $this->assertEquals([10, 30], $job->backoff());
+    }
+
+    public function test_duplicate_dispatch_for_same_order_is_deduplicated(): void
+    {
+        $order = $this->createOrderWithItems();
+
+        SendOrderConfirmationJob::dispatch($order->id);
+        SendOrderConfirmationJob::dispatch($order->id);
+
+        $this->assertEquals(1, DB::table('jobs')->count());
     }
 }
