@@ -4,6 +4,9 @@
 
     use App\Exceptions\EmptyCartException;
     use App\Exceptions\InsufficientStockException;
+    use App\Jobs\GenerateInvoiceJob;
+    use App\Jobs\NotifyAdminJob;
+    use App\Jobs\SendOrderConfirmationJob;
     use App\Models\Inventory;
     use App\Models\Order;
     use App\Models\Payment;
@@ -23,7 +26,7 @@
                 throw new EmptyCartException('Your cart is empty.');
             }
 
-            return DB::transaction(function () use ($user, $cart, $shippingData) {
+            $order = DB::transaction(function () use ($user, $cart, $shippingData) {
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_number' => null,
@@ -47,12 +50,9 @@
 
                 $subtotal = 0;
 
-                // Always lock inventory rows in the same order (by product_id)
-                // so two concurrent checkouts can never deadlock each other.
                 foreach ($cart->cartItems->sortBy('product_id') as $item) {
                     $product = $item->product;
 
-                    // Row-level lock: other transactions wait here until we commit/rollback
                     $inventory = Inventory::where('product_id', $product->id)
                         ->lockForUpdate()
                         ->firstOrFail();
@@ -105,5 +105,13 @@
 
                 return $order->load('orderItems', 'payments');
             });
+
+            // Dispatched AFTER the transaction has committed, so a job never
+            // picks up an order that could still be rolled back.
+            SendOrderConfirmationJob::dispatch($order->id);
+            GenerateInvoiceJob::dispatch($order->id);
+            NotifyAdminJob::dispatch($order->id);
+
+            return $order;
         }
     }
