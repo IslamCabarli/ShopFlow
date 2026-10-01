@@ -65,12 +65,17 @@
 
         public function test_duplicate_dispatch_for_same_order_is_deduplicated(): void
         {
+            config(['queue.default' => 'database']);
+
             $order = $this->createOrderWithItems();
 
+            $countAfterCheckout = DB::table('jobs')->count(); // checkout artıq 3 job qoyub
+
             SendOrderConfirmationJob::dispatch($order->id);
             SendOrderConfirmationJob::dispatch($order->id);
 
-            $this->assertEquals(1, DB::table('jobs')->count());
+
+            $this->assertEquals($countAfterCheckout, DB::table('jobs')->count());
         }
 
         private function checkoutAsNewUser(): User
