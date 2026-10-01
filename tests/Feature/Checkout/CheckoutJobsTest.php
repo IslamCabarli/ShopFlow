@@ -66,4 +66,31 @@ class CheckoutJobsTest extends TestCase
 
         $this->assertEquals(1, DB::table('jobs')->count());
     }
+
+    private function checkoutAsNewUser(): User
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['price' => 50, 'discount_price' => null]);
+        Inventory::factory()->create(['product_id' => $product->id, 'quantity' => 10]);
+        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $cart->cartItems()->create(['product_id' => $product->id, 'quantity' => 1]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/checkout', [
+            'shipping_name' => 'Test',
+            'shipping_address' => 'Addr',
+            'shipping_city' => 'Baku',
+            'shipping_country' => 'Azerbaijan',
+        ]);
+
+        return $user;
+    }
+
+    private function createOrderWithItems(): Order
+    {
+        $user = $this->checkoutAsNewUser();
+
+        return Order::where('user_id', $user->id)->latest()->first();
+    }
 }
