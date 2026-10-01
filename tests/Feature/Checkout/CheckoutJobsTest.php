@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Jobs\SendOrderConfirmationJob;
 use App\Jobs\GenerateInvoiceJob;
 use App\Jobs\NotifyAdminJob;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Queue;
 
 class CheckoutJobsTest extends TestCase
@@ -38,5 +39,11 @@ class CheckoutJobsTest extends TestCase
             OrderConfirmationMail::class,
             fn ($mail) => $mail->order->id === $order->id
         );
+    }
+    public function test_job_throws_for_nonexistent_order(): void
+    {
+        $this->expectException(ModelNotFoundException::class);
+
+        (new SendOrderConfirmationJob(999999))->handle();
     }
 }
