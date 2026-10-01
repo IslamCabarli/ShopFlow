@@ -46,4 +46,11 @@ class CheckoutJobsTest extends TestCase
 
         (new SendOrderConfirmationJob(999999))->handle();
     }
+    public function test_jobs_have_retry_and_backoff_configured(): void
+    {
+        $job = new GenerateInvoiceJob(1);
+
+        $this->assertEquals(3, $job->tries);
+        $this->assertEquals([10, 30], $job->backoff());
+    }
 }
