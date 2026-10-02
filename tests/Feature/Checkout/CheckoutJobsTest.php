@@ -3,7 +3,6 @@
     namespace Tests\Feature\Checkout;
 
     use App\Jobs\GenerateInvoiceJob;
-    use App\Jobs\NotifyAdminJob;
     use App\Jobs\SendOrderConfirmationJob;
     use App\Mail\OrderConfirmationMail;
     use App\Models\Cart;
