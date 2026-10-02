@@ -1,12 +1,9 @@
 <?php
 
     namespace App\Services;
-
+    use App\Events\OrderCreated;
     use App\Exceptions\EmptyCartException;
     use App\Exceptions\InsufficientStockException;
-    use App\Jobs\GenerateInvoiceJob;
-    use App\Jobs\NotifyAdminJob;
-    use App\Jobs\SendOrderConfirmationJob;
     use App\Models\Inventory;
     use App\Models\Order;
     use App\Models\Payment;
@@ -106,11 +103,7 @@
                 return $order->load('orderItems', 'payments');
             });
 
-            // Dispatched AFTER the transaction has committed, so a job never
-            // picks up an order that could still be rolled back.
-            SendOrderConfirmationJob::dispatch($order->id);
-            GenerateInvoiceJob::dispatch($order->id);
-            NotifyAdminJob::dispatch($order->id);
+            OrderCreated::dispatch($order);
 
             return $order;
         }
