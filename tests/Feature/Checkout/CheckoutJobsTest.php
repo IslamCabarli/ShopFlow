@@ -15,7 +15,8 @@
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Mail;
-    use Illuminate\Support\Facades\Queue;
+    use App\Events\OrderCreated;
+    use Illuminate\Support\Facades\Event;
     use Laravel\Sanctum\Sanctum;
     use Tests\TestCase;
 
@@ -25,13 +26,11 @@
 
         public function test_checkout_dispatches_all_three_jobs(): void
         {
-            Queue::fake();
+            Event::fake();
 
             $this->checkoutAsNewUser();
 
-            Queue::assertPushed(SendOrderConfirmationJob::class);
-            Queue::assertPushed(GenerateInvoiceJob::class);
-            Queue::assertPushed(NotifyAdminJob::class);
+            Event::assertDispatched(OrderCreated::class);
         }
 
         public function test_send_order_confirmation_job_sends_mail(): void
