@@ -64,7 +64,7 @@
 
         public function recordUsage(Coupon $coupon, User $user, int $orderId): void
         {
-            $coupon->couponUsages()->create([
+            $coupon->usages()->create([
                 'user_id' => $user->id,
                 'order_id' => $orderId,
                 'used_at' => now(),
