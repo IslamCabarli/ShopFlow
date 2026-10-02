@@ -1,9 +1,11 @@
 <?php
 
     namespace App\Services;
+
     use App\Events\OrderCreated;
     use App\Exceptions\EmptyCartException;
     use App\Exceptions\InsufficientStockException;
+    use App\Models\Coupon;
     use App\Models\Inventory;
     use App\Models\Order;
     use App\Models\Payment;
@@ -13,6 +15,10 @@
 
     class CheckoutService
     {
+        public function __construct(private CouponService $couponService)
+        {
+        }
+
         public function checkout(User $user, array $shippingData): Order
         {
             $cart = $user->cart()
@@ -23,7 +29,9 @@
                 throw new EmptyCartException('Your cart is empty.');
             }
 
-            $order = DB::transaction(function () use ($user, $cart, $shippingData) {
+            $couponCode = $shippingData['coupon_code'] ?? null;
+
+            $order = DB::transaction(function () use ($user, $cart, $shippingData, $couponCode) {
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_number' => null,
@@ -82,6 +90,23 @@
                 }
 
                 $discount = 0;
+                $appliedCoupon = null;
+
+                if ($couponCode) {
+                    // Locked here, same pattern as inventory in Week 6: two
+                    // concurrent checkouts racing for the last use of a coupon
+                    // must not both pass the usage_limit check.
+                    $appliedCoupon = Coupon::where('code', $couponCode)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$appliedCoupon) {
+                        throw new \App\Exceptions\InvalidCouponException('Coupon code not found.');
+                    }
+
+                    $discount = $this->couponService->validate($appliedCoupon, $subtotal, $user);
+                }
+
                 $total = $subtotal - $discount;
 
                 $order->update([
@@ -89,6 +114,10 @@
                     'discount' => $discount,
                     'total' => $total,
                 ]);
+
+                if ($appliedCoupon) {
+                    $this->couponService->recordUsage($appliedCoupon, $user, $order->id);
+                }
 
                 Payment::create([
                     'order_id' => $order->id,
