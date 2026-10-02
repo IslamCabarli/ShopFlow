@@ -68,13 +68,14 @@
 
             $order = $this->createOrderWithItems();
 
-            $countAfterCheckout = DB::table('jobs')->count(); // checkout artıq 3 job qoyub
+            $countBefore = DB::table('jobs')->count();
 
             SendOrderConfirmationJob::dispatch($order->id);
             SendOrderConfirmationJob::dispatch($order->id);
 
+            $countAfter = DB::table('jobs')->count();
 
-            $this->assertEquals($countAfterCheckout, DB::table('jobs')->count());
+            $this->assertEquals($countBefore + 1, $countAfter);
         }
 
         private function checkoutAsNewUser(): User
