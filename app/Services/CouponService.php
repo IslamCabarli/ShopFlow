@@ -5,12 +5,10 @@
     use App\Exceptions\InvalidCouponException;
     use App\Models\Coupon;
     use App\Models\User;
-    use Illuminate\Support\Facades\DB;
 
     class CouponService
     {
-
-        public function validateAndCalculateDiscount(string $code, float $subtotal, User $user): array
+        public function findByCodeOrFail(string $code): Coupon
         {
             $coupon = Coupon::where('code', $code)->first();
 
@@ -18,6 +16,16 @@
                 throw new InvalidCouponException('Coupon code not found.');
             }
 
+            return $coupon;
+        }
+
+        /**
+         * Validate a coupon against all business rules and return the discount
+         * amount. Takes whatever Coupon instance the caller passes in (locked
+         * or not) — locking is the caller's responsibility, not this service's.
+         */
+        public function validate(Coupon $coupon, float $subtotal, User $user): float
+        {
             if (!$coupon->is_active) {
                 throw new InvalidCouponException('This coupon is no longer active.');
             }
@@ -49,17 +57,14 @@
             }
 
             $discount = $coupon->type === 'percentage'
-                ? $subtotal * ($coupon->value / 100)
-                : $coupon->value;
+                ? $subtotal * ((float) $coupon->value / 100)
+                : (float) $coupon->value;
 
             if ($coupon->maximum_discount !== null) {
-                $discount = min($discount, $coupon->maximum_discount);
+                $discount = min($discount, (float) $coupon->maximum_discount);
             }
 
-            // Discount can never exceed the subtotal itself.
-            $discount = min($discount, $subtotal);
-
-            return [$coupon, round($discount, 2)];
+            return round(min($discount, $subtotal), 2);
         }
 
         public function recordUsage(Coupon $coupon, User $user, int $orderId): void
