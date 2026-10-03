@@ -4,6 +4,7 @@ namespace Tests\Feature\Review;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Cart;
+use App\Models\Review;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\User;
@@ -102,6 +103,25 @@ class ReviewTest extends TestCase
 
         $this->assertEquals(0, $product->fresh()->average_rating);
         $this->assertEquals(0, $product->fresh()->reviews_count);
+    }
+
+    public function test_user_cannot_delete_another_users_review(): void
+    {
+        $owner = User::factory()->create();
+        $product = $this->buyProductFor($owner);
+
+        $review = Review::factory()->create([
+            'user_id' => $owner->id,
+            'product_id' => $product->id,
+        ]);
+
+        $otherUser = User::factory()->create();
+        Sanctum::actingAs($otherUser);
+
+        $response = $this->deleteJson("/api/v1/reviews/{$review->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('reviews', ['id' => $review->id]);
     }
 
     private function buyProductFor(User $user): Product
