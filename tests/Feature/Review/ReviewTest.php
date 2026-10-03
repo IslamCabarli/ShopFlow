@@ -51,7 +51,21 @@ class ReviewTest extends TestCase
         $this->assertDatabaseCount('reviews', 0);
     }
 
+    public function test_user_cannot_review_same_product_twice(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->buyProductFor($user);
 
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/v1/products/{$product->id}/reviews", ['rating' => 4])
+            ->assertStatus(201);
+
+        $response = $this->postJson("/api/v1/products/{$product->id}/reviews", ['rating' => 5]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseCount('reviews', 1);
+    }
 
     private function buyProductFor(User $user): Product
     {
