@@ -81,6 +81,29 @@ class ReviewTest extends TestCase
         $this->assertEquals(1, $product->fresh()->reviews_count);
     }
 
+    public function test_product_average_rating_updates_when_review_deleted(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->buyProductFor($user);
+
+        $review = Review::factory()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'rating' => 4,
+        ]);
+
+
+        $product->refresh();
+        $this->assertEquals(4, $product->average_rating);
+
+        Sanctum::actingAs($user);
+
+        $this->deleteJson("/api/v1/reviews/{$review->id}")->assertStatus(200);
+
+        $this->assertEquals(0, $product->fresh()->average_rating);
+        $this->assertEquals(0, $product->fresh()->reviews_count);
+    }
+
     private function buyProductFor(User $user): Product
     {
         $product = Product::factory()->create(['price' => 50, 'discount_price' => null]);
