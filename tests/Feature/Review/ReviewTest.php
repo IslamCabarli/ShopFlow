@@ -67,6 +67,20 @@ class ReviewTest extends TestCase
         $this->assertDatabaseCount('reviews', 1);
     }
 
+    public function test_product_average_rating_updates_when_review_created(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->buyProductFor($user);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/v1/products/{$product->id}/reviews", ['rating' => 4])
+            ->assertStatus(201);
+
+        $this->assertEquals(4, $product->fresh()->average_rating);
+        $this->assertEquals(1, $product->fresh()->reviews_count);
+    }
+
     private function buyProductFor(User $user): Product
     {
         $product = Product::factory()->create(['price' => 50, 'discount_price' => null]);
