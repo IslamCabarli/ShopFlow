@@ -36,6 +36,22 @@ class ReviewTest extends TestCase
     }
 
 
+    public function test_user_cannot_review_unpurchased_product(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson("/api/v1/products/{$product->id}/reviews", [
+            'rating' => 5,
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseCount('reviews', 0);
+    }
+
+
 
     private function buyProductFor(User $user): Product
     {
