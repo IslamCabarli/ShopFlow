@@ -14,6 +14,28 @@ class ReviewTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_can_review_a_purchased_product(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->buyProductFor($user);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson("/api/v1/products/{$product->id}/reviews", [
+            'rating' => 5,
+            'comment' => 'Great product!',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('reviews', [
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'rating' => 5,
+        ]);
+    }
+
+
 
     private function buyProductFor(User $user): Product
     {
