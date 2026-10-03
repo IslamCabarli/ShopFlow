@@ -32,10 +32,9 @@
         {
             $this->authorize('create', [Review::class, $product]);
 
-            $review = $product->reviews()->create([
-                ...$request->validated(),
-                'user_id' => $request->user()->id,
-            ]);
+            $review = $product->reviews()->make($request->validated());
+            $review->user_id = $request->user()->id;
+            $review->save();
 
             return $this->success(
                 new ReviewResource($review->load('user')),
