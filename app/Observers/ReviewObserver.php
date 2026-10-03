@@ -26,10 +26,9 @@
         {
             $product = $review->product;
 
-            $product->update([
-                'average_rating' => $product->reviews()->avg('rating') ?? 0,
-                'reviews_count' => $product->reviews()->count(),
-            ]);
+            $product->average_rating = $product->reviews()->avg('rating') ?? 0;
+            $product->reviews_count = $product->reviews()->count();
+            $product->save();
 
             Cache::tags(['products'])->flush();
         }
