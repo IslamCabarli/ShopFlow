@@ -15,9 +15,11 @@
 
     class CheckoutService
     {
-        public function __construct(private CouponService $couponService)
-        {
-        }
+        public function __construct(
+            private CouponService $couponService,
+            private PaymentService $paymentService
+        )
+        {}
 
         public function checkout(User $user, array $shippingData): Order
         {
@@ -131,7 +133,7 @@
 
                 return $order->load('orderItems', 'payments');
             });
-
+            $this->paymentService->charge($order->payments->first());
             OrderCreated::dispatch($order);
 
             return $order;
