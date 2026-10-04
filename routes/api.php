@@ -7,6 +7,7 @@
     use Illuminate\Support\Facades\Route;
     use App\Http\Controllers\Api\CheckoutController;
     use App\Http\Controllers\Api\ReviewController;
+    use App\Http\Controllers\Api\PaymentController;
 
     Route::prefix('v1/auth')->group(function () {
         Route::middleware('throttle:5,1')->group(function () {
@@ -53,22 +54,19 @@
         Route::delete('/', [CartController::class, 'clear']);
     });
 
-    Route::prefix('v1')
-        ->middleware(['auth:sanctum', 'throttle:30,1'])
-        ->group(function () {
+    Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:30,1'])->group(function () {
             Route::post('/checkout', [CheckoutController::class, 'store']);
         });
 
-    Route::prefix('v1/products/{product}/reviews')
-        ->middleware(['auth:sanctum', 'throttle:30,1'])
-        ->group(function () {
+    Route::prefix('v1/products/{product}/reviews')->middleware(['auth:sanctum', 'throttle:30,1'])->group(function () {
             Route::get('/', [ReviewController::class, 'index']);
             Route::post('/', [ReviewController::class, 'store']);
         });
 
-    Route::prefix('v1/reviews/{review}')
-        ->middleware(['auth:sanctum', 'throttle:30,1'])
-        ->group(function () {
+    Route::prefix('v1/reviews/{review}')->middleware(['auth:sanctum', 'throttle:30,1'])->group(function () {
             Route::patch('/', [ReviewController::class, 'update']);
             Route::delete('/', [ReviewController::class, 'destroy']);
         });
+
+    Route::post('v1/orders/{order}/charge', [PaymentController::class, 'charge'])
+        ->middleware(['auth:sanctum', 'throttle:10,1']);
