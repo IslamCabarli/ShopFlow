@@ -63,8 +63,8 @@
                 'subtotal' => 200,
                 'discount' => 0,
                 'total' => 200,
-                'status' => 'pending',
-                'payment_status' => 'pending',
+                'status' => 'confirmed',
+                'payment_status' => 'paid',
             ]);
 
             $this->assertDatabaseHas('order_items', [
@@ -79,7 +79,7 @@
             $this->assertDatabaseHas('payments', [
                 'order_id' => 1,
                 'amount' => 200,
-                'status' => 'pending',
+                'status' => 'paid',
                 'provider' => 'fake',
             ]);
 
