@@ -43,22 +43,20 @@
 
             $response->assertStatus(201);
 
+            // Derive the expected values from the created order instead of
+            // assuming id=1: Postgres sequences are not rolled back between tests.
+            $orderId = $response->json('data.id');
+
             $response->assertJsonPath(
                 'data.order_number',
-                'ORD-' . now()->format('Ymd') . '-00001'
+                'ORD-' . now()->format('Ymd') . '-' . str_pad($orderId, 5, '0', STR_PAD_LEFT)
             );
 
-            $response->assertJsonPath(
-                'data.subtotal',
-                '200.00'
-            );
-
-            $response->assertJsonPath(
-                'data.total',
-                '200.00'
-            );
+            $response->assertJsonPath('data.subtotal', '200.00');
+            $response->assertJsonPath('data.total', '200.00');
 
             $this->assertDatabaseHas('orders', [
+                'id' => $orderId,
                 'user_id' => $user->id,
                 'subtotal' => 200,
                 'discount' => 0,
@@ -68,6 +66,7 @@
             ]);
 
             $this->assertDatabaseHas('order_items', [
+                'order_id' => $orderId,
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'product_sku' => $product->sku,
@@ -77,7 +76,7 @@
             ]);
 
             $this->assertDatabaseHas('payments', [
-                'order_id' => 1,
+                'order_id' => $orderId,
                 'amount' => 200,
                 'status' => 'paid',
                 'provider' => 'fake',
