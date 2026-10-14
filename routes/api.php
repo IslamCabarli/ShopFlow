@@ -8,6 +8,7 @@
     use App\Http\Controllers\Api\CheckoutController;
     use App\Http\Controllers\Api\ReviewController;
     use App\Http\Controllers\Api\PaymentController;
+    use App\Http\Controllers\Api\OrderController;
 
     Route::prefix('v1/auth')->group(function () {
         Route::middleware('throttle:5,1')->group(function () {
@@ -67,6 +68,14 @@
             Route::patch('/', [ReviewController::class, 'update']);
             Route::delete('/', [ReviewController::class, 'destroy']);
         });
+
+    Route::prefix('v1/orders')
+        ->middleware(['auth:sanctum', 'throttle:60,1'])
+        ->group(function () {
+            Route::get('/', [OrderController::class, 'index']);
+            Route::get('/{order}', [OrderController::class, 'show']);
+        });
+
 
     Route::post('v1/orders/{order}/charge', [PaymentController::class, 'charge'])
         ->middleware(['auth:sanctum', 'throttle:10,1']);
