@@ -3,9 +3,11 @@
     namespace App\Http\Controllers\Api;
 
     use App\Http\Controllers\Controller;
+    use App\Http\Requests\Order\UpdateOrderStatusRequest;
     use App\Http\Resources\OrderResource;
     use App\Http\Traits\ApiResponse;
     use App\Models\Order;
+    use App\Services\OrderService;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
 
@@ -15,7 +17,6 @@
 
         public function index(Request $request): JsonResponse
         {
-            // List view stays light: no items/payments loaded, so no extra queries.
             $orders = $request->user()
                 ->orders()
                 ->latest()
@@ -33,6 +34,27 @@
 
             return $this->success(
                 new OrderResource($order->load(['orderItems', 'payments']))
+            );
+        }
+
+        public function cancel(Order $order, OrderService $orderService): JsonResponse
+        {
+            $this->authorize('cancel', $order);
+
+            return $this->success(
+                new OrderResource($orderService->cancel($order)),
+                'Order cancelled successfully'
+            );
+        }
+
+        public function updateStatus(
+            UpdateOrderStatusRequest $request,
+            Order $order,
+            OrderService $orderService
+        ): JsonResponse {
+            return $this->success(
+                new OrderResource($orderService->updateStatus($order, $request->validated('status'))),
+                'Order status updated successfully'
             );
         }
     }
