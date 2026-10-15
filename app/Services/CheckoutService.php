@@ -12,6 +12,7 @@
     use App\Models\User;
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Str;
+    use Illuminate\Support\Facades\Cache;
 
     class CheckoutService
     {
@@ -134,6 +135,7 @@
                 return $order->load('orderItems', 'payments');
             });
             $this->paymentService->charge($order->payments->first());
+            Cache::tags(['products'])->flush();
             OrderCreated::dispatch($order);
 
             return $order;
