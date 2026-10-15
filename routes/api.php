@@ -80,3 +80,6 @@
 
     Route::post('v1/orders/{order}/charge', [PaymentController::class, 'charge'])
         ->middleware(['auth:sanctum', 'throttle:10,1']);
+
+    Route::patch('v1/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->middleware(['auth:sanctum', 'admin', 'throttle:30,1']);
