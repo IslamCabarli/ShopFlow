@@ -17,9 +17,6 @@
 
         public function charge(Payment $payment): Payment
         {
-            // Guards against a duplicate charge request: once the order's
-            // payment_status has already moved past 'pending', this blocks
-            // a second attempt before it ever reaches the provider.
             if ($payment->order->payment_status !== 'pending') {
                 throw new InvalidOrderTransitionException(
                     'This order has already been processed and cannot be charged again.'
@@ -38,6 +35,26 @@
                 if ($succeeded) {
                     $this->stateMachine->transitionOrderTo($payment->order, 'confirmed');
                 }
+
+                return $payment;
+            });
+        }
+
+        public function refund(Payment $payment): Payment
+        {
+            if ($payment->status !== 'paid') {
+                throw new InvalidOrderTransitionException('Only paid payments can be refunded.');
+            }
+
+            if (! $this->provider->refund($payment)) {
+                throw new \RuntimeException("Provider refused the refund for payment {$payment->id}.");
+            }
+
+            return DB::transaction(function () use ($payment) {
+                $payment->status = 'refunded';
+                $payment->save();
+
+                $this->stateMachine->transitionPaymentTo($payment->order, 'refunded');
 
                 return $payment;
             });
