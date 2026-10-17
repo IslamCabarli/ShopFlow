@@ -12,6 +12,12 @@
             return true;
         }
 
+        protected function prepareForValidation(): void
+        {
+            // Surface the header as input so it goes through normal validation.
+            $this->merge(['idempotency_key' => $this->header('Idempotency-Key')]);
+        }
+
         /**
          * @return array<string, ValidationRule|array<mixed>|string>
          */
@@ -24,6 +30,7 @@
                 'shipping_country' => ['required', 'string', 'max:100'],
                 'shipping_postal_code' => ['nullable', 'string', 'max:20'],
                 'coupon_code' => ['nullable', 'string', 'max:100'],
+                'idempotency_key' => ['nullable', 'string', 'max:100'],
             ];
         }
     }
