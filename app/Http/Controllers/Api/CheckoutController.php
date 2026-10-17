@@ -15,19 +15,29 @@
 
         public function __construct(
             protected CheckoutService $checkoutService
-        ) {}
+        ) {
+        }
 
         public function store(CheckoutRequest $request): JsonResponse
         {
-            $order = $this->checkoutService->checkout(
+            $result = $this->checkoutService->checkout(
                 $request->user(),
-                $request->validated()
+                $request->validated(),
+                $request->validated('idempotency_key'),
             );
 
-            return $this->success(
-                new OrderResource($order),
-                'Checkout completed successfully.',
+            $response = $this->success(
+                new OrderResource($result->order),
+                $result->replayed
+                    ? 'Checkout was already completed for this Idempotency-Key.'
+                    : 'Checkout completed successfully.',
                 201
             );
+
+            if ($result->replayed) {
+                $response->header('Idempotent-Replayed', 'true');
+            }
+
+            return $response;
         }
     }
