@@ -9,6 +9,8 @@
     use App\Http\Controllers\Api\ReviewController;
     use App\Http\Controllers\Api\PaymentController;
     use App\Http\Controllers\Api\OrderController;
+    use App\Http\Controllers\Api\AdminCouponController;
+    use App\Http\Controllers\Api\AdminInventoryController;
 
     Route::prefix('v1/auth')->group(function () {
         Route::middleware('throttle:5,1')->group(function () {
@@ -83,3 +85,12 @@
 
     Route::patch('v1/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])
         ->middleware(['auth:sanctum', 'admin', 'throttle:30,1']);
+
+    Route::prefix('v1/admin')
+        ->middleware(['auth:sanctum', 'admin', 'throttle:30,1'])
+        ->group(function () {
+            Route::apiResource('coupons', AdminCouponController::class);
+
+            Route::get('inventories', [AdminInventoryController::class, 'index']);
+            Route::post('products/{product}/inventory/adjust', [AdminInventoryController::class, 'adjust']);
+        });
