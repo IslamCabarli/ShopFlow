@@ -14,8 +14,11 @@
 
         protected function prepareForValidation(): void
         {
-            // Surface the header as input so it goes through normal validation.
             $this->merge(['idempotency_key' => $this->header('Idempotency-Key')]);
+
+            if (is_string($this->input('coupon_code'))) {
+                $this->merge(['coupon_code' => strtoupper(trim($this->input('coupon_code')))]);
+            }
         }
 
         /**
