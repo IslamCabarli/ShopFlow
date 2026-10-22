@@ -47,15 +47,22 @@ return [
     'openapi_version' => \Dedoc\Scramble\OpenApiVersion::V3_1,
 
     'info' => [
-        /*
-         * API version.
-         */
-        'version' => env('API_VERSION', '0.0.1'),
+        'version' => env('API_VERSION', '1.0.0'),
+        'description' => <<<'MD'
+    REST API of the ShopFlow e-commerce platform.
 
-        /*
-         * Description rendered on the home page of the API documentation (`/docs/api`).
-         */
-        'description' => '',
+    ## Authentication
+    Obtain a token via `POST /v1/auth/register` or `POST /v1/auth/login` and send it as `Authorization: Bearer <token>`. Tokens expire after 24 hours.
+
+    ## Response format
+    Successful responses look like `{ "data": ..., "message": "..." }`; paginated lists add a `meta` object. Errors look like `{ "message": "...", "errors": {} }`.
+
+    ## Idempotency
+    `POST /v1/checkout` accepts an optional `Idempotency-Key` header (max 100 characters). Replaying the same key with the same payload returns the original order and sets `Idempotent-Replayed: true`; reusing the key with a different payload returns `422`.
+
+    ## Rate limiting
+    Limits depend on the endpoint group (for example 5 requests/minute for register and login, 60/minute for public reads). Exceeding a limit returns `429`.
+    MD,
     ],
 
     'ui' => [
@@ -183,5 +190,5 @@ return [
      * ],
      */
     // 'security_strategy' => \Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy::class,
-    'security_strategy' => null,
+    'security_strategy' => \Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy::class,
 ];
