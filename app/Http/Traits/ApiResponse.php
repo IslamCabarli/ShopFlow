@@ -6,7 +6,16 @@
 
     trait ApiResponse
     {
-
+        /**
+         * Paginated list inside the standard envelope.
+         *
+         * @template TResource
+         * @template TStatus of int
+         *
+         * @param  TResource  $paginatedResource
+         * @param  TStatus  $status
+         * @return JsonResponse<array{data: TResource, meta: array{current_page: int, last_page: int, per_page: int, total: int}, message: string}, TStatus>
+         */
         protected function successPaginated($paginatedResource, string $message = '', int $status = 200): JsonResponse
         {
             return response()->json([
@@ -20,6 +29,17 @@
                 'message' => $message,
             ], $status);
         }
+
+        /**
+         * Single payload inside the standard envelope.
+         *
+         * @template TData
+         * @template TStatus of int
+         *
+         * @param  TData  $data
+         * @param  TStatus  $status
+         * @return JsonResponse<array{data: TData, message: string}, TStatus>
+         */
         protected function success(mixed $data = null, string $message = '', int $status = 200): JsonResponse
         {
             return response()->json([
