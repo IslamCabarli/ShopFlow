@@ -26,7 +26,7 @@
         public function rules(): array
         {
             $coupon = $this->route('coupon');
-            $type = $this->input('type', $coupon->type);
+            $type = $this->input('type', $coupon?->type);
 
             return [
                 'code' => [
