@@ -11,11 +11,19 @@
     use App\Services\InventoryService;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
+    use Dedoc\Scramble\Attributes\QueryParameter;
 
     class AdminInventoryController extends Controller
     {
         use ApiResponse;
 
+        /**
+         * List inventories
+         *
+         * Sorted by quantity ascending, so the lowest stock comes first.
+         */
+        #[QueryParameter('page', 'Page number.', type: 'int', default: 1)]
+        #[QueryParameter('low_stock', 'Only inventories with quantity at or below this threshold.', type: 'int')]
         public function index(Request $request): JsonResponse
         {
             $request->validate(['low_stock' => ['nullable', 'integer', 'min:0']]);
