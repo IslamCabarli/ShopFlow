@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.2",
     "info": {
-        "title": "Laravel",
+        "title": "ShopFlow",
         "version": "1.0.0",
         "description": "REST API of the ShopFlow e-commerce platform.\n\n## Authentication\nObtain a token via `POST /v1/auth/register` or `POST /v1/auth/login` and send it as `Authorization: Bearer <token>`. Tokens expire after 24 hours.\n\n## Response format\nSuccessful responses look like `{ \"data\": ..., \"message\": \"...\" }`; paginated lists add a `meta` object. Errors look like `{ \"message\": \"...\", \"errors\": {} }`.\n\n## Idempotency\n`POST /v1/checkout` accepts an optional `Idempotency-Key` header (max 100 characters). Replaying the same key with the same payload returns the original order and sets `Idempotent-Replayed: true`; reusing the key with a different payload returns `422`.\n\n## Rate limiting\nLimits depend on the endpoint group (for example 5 requests/minute for register and login, 60/minute for public reads). Exceeding a limit returns `429`."
     },
@@ -189,8 +189,29 @@
         "/v1/admin/inventories": {
             "get": {
                 "operationId": "adminInventory.index",
+                "description": "Sorted by quantity ascending, so the lowest stock comes first.",
+                "summary": "List inventories",
                 "tags": [
                     "AdminInventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "low_stock",
+                        "in": "query",
+                        "description": "Only inventories with quantity at or below this threshold.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -710,8 +731,20 @@
         "/v1/checkout": {
             "post": {
                 "operationId": "checkout.store",
+                "description": "Creates the order, reserves stock, charges the payment and empties the cart in one transaction.",
+                "summary": "Place an order from the current cart",
                 "tags": [
                     "Checkout"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "description": "Optional (max 100 characters). Makes the request safe to retry: replaying the same key with the same payload returns the original order with an `Idempotent-Replayed: true` header; a different payload returns 422.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
                 ],
                 "requestBody": {
                     "required": true,
@@ -933,9 +966,61 @@
         "/v1/products": {
             "get": {
                 "operationId": "product.index",
-                "summary": "Display a listing of the resource",
+                "description": "Public. Results are paginated (15 per page) and cached for 5 minutes per distinct query string.",
+                "summary": "List products",
                 "tags": [
                     "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Only products in this category (category ID).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "Minimum price, inclusive.",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "Maximum price, inclusive.",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Case-insensitive match against the product name.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "One of: price_asc, price_desc, newest, oldest.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -1330,13 +1415,6 @@
                             "null"
                         ],
                         "maxLength": 100
-                    },
-                    "idempotency_key": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 100
                     }
                 },
                 "required": [
@@ -1623,10 +1701,15 @@
                         "maxLength": 100
                     },
                     "type": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "percentage",
+                            "fixed"
+                        ]
                     },
                     "value": {
-                        "type": "number"
+                        "type": "number",
+                        "maximum": 100
                     },
                     "minimum_order_amount": {
                         "type": "number",
