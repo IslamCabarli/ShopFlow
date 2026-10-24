@@ -14,6 +14,7 @@
     use Illuminate\Http\Request;
     use App\Http\Filters\ProductFilter;
     use Illuminate\Support\Str;
+    use Dedoc\Scramble\Attributes\QueryParameter;
 
     class ProductController extends Controller
     {
@@ -22,8 +23,16 @@
         private const CACHE_TTL = 300; // 5 minutes
 
         /**
-         * Display a listing of the resource.
+         * List products
+         *
+         * Public. Results are paginated (15 per page) and cached for 5 minutes per distinct query string.
          */
+        #[QueryParameter('page', 'Page number.', type: 'int', default: 1)]
+        #[QueryParameter('category', 'Only products in this category (category ID).', type: 'int')]
+        #[QueryParameter('min_price', 'Minimum price, inclusive.', type: 'float')]
+        #[QueryParameter('max_price', 'Maximum price, inclusive.', type: 'float')]
+        #[QueryParameter('search', 'Case-insensitive match against the product name.', type: 'string')]
+        #[QueryParameter('sort', 'One of: price_asc, price_desc, newest, oldest.', type: 'string')]
         public function index(Request $request, ProductFilter $filter): JsonResponse
         {
             $cacheKey = 'products:index:' . md5($request->getQueryString() ?? 'all');
