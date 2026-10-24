@@ -7,6 +7,7 @@
     use App\Http\Resources\OrderResource;
     use App\Http\Traits\ApiResponse;
     use App\Services\CheckoutService;
+    use Dedoc\Scramble\Attributes\HeaderParameter;
     use Illuminate\Http\JsonResponse;
 
     class CheckoutController extends Controller
@@ -18,12 +19,22 @@
         ) {
         }
 
+        /**
+         * Place an order from the current cart
+         *
+         * Creates the order, reserves stock, charges the payment and empties the cart in one transaction.
+         */
+        #[HeaderParameter(
+            'Idempotency-Key',
+            'Optional (max 100 characters). Makes the request safe to retry: replaying the same key with the same payload returns the original order with an `Idempotent-Replayed: true` header; a different payload returns 422.',
+            type: 'string'
+        )]
         public function store(CheckoutRequest $request): JsonResponse
         {
             $result = $this->checkoutService->checkout(
                 $request->user(),
                 $request->validated(),
-                $request->validated('idempotency_key'),
+                $request->header('Idempotency-Key'),
             );
 
             $response = $this->success(
