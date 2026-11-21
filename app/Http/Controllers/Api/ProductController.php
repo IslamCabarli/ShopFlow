@@ -2,19 +2,19 @@
 
     namespace App\Http\Controllers\Api;
 
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Cache;
     use App\Http\Controllers\Controller;
+    use App\Http\Filters\ProductFilter;
     use App\Http\Requests\Product\StoreProductRequest;
     use App\Http\Requests\Product\UpdateProductRequest;
-    use App\Models\Product;
     use App\Http\Resources\ProductResource;
     use App\Http\Traits\ApiResponse;
+    use App\Models\Product;
+    use Dedoc\Scramble\Attributes\QueryParameter;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
-    use App\Http\Filters\ProductFilter;
+    use Illuminate\Support\Facades\Cache;
+    use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Str;
-    use Dedoc\Scramble\Attributes\QueryParameter;
 
     class ProductController extends Controller
     {
@@ -43,10 +43,16 @@
                 function () use ($request, $filter) {
                     $query = Product::query()->with(['categories', 'inventory']);
                     $query = $filter->apply($query, $request);
+
                     return $query->paginate(15);
                 }
             );
 
+            /**
+             * A page of products.
+             *
+             * @body array{data: ProductResource[], meta: array{current_page: int, last_page: int, per_page: int, total: int}, message: string}
+             */
             return $this->successPaginated(
                 ProductResource::collection($products),
                 'Products retrieved successfully'
@@ -54,7 +60,9 @@
         }
 
         /**
-         * Store a newly created resource in storage.
+         * Create a product
+         *
+         * Admin only. Also creates the inventory row (initial `quantity`, default 0) and syncs `category_ids`.
          */
         public function store(StoreProductRequest $request): JsonResponse
         {
@@ -68,11 +76,18 @@
                 $product = Product::create($data);
                 $product->inventory()->create(['quantity' => $quantity]);
                 $product->categories()->sync($categoryIds);
+
                 return $product;
             });
 
             Cache::tags(['products'])->flush();
 
+            /**
+             * Product created.
+             *
+             * @status 201
+             * @body array{data: ProductResource, message: string}
+             */
             return $this->success(
                 new ProductResource($product->load(['categories', 'inventory'])),
                 'Product created successfully',
@@ -81,7 +96,9 @@
         }
 
         /**
-         * Display the specified resource.
+         * Get a product
+         *
+         * Public. Includes categories and the available stock.
          */
         public function show(Product $product): JsonResponse
         {
@@ -93,11 +110,18 @@
                 fn () => $product->load(['categories', 'inventory'])
             );
 
+            /**
+             * The product.
+             *
+             * @body array{data: ProductResource, message: string}
+             */
             return $this->success(new ProductResource($product));
         }
 
         /**
-         * Update the specified resource in storage.
+         * Update a product
+         *
+         * Admin only. Categories are only changed when `category_ids` is sent.
          */
         public function update(UpdateProductRequest $request, Product $product): JsonResponse
         {
@@ -115,6 +139,11 @@
 
             Cache::tags(['products'])->flush();
 
+            /**
+             * Product updated.
+             *
+             * @body array{data: ProductResource, message: string}
+             */
             return $this->success(
                 new ProductResource($product->load(['categories', 'inventory'])),
                 'Product updated successfully'
@@ -122,7 +151,9 @@
         }
 
         /**
-         * Remove the specified resource from storage.
+         * Delete a product
+         *
+         * Admin only. Soft delete; existing orders keep their price and name snapshots.
          */
         public function destroy(Product $product): JsonResponse
         {
@@ -130,6 +161,11 @@
 
             Cache::tags(['products'])->flush();
 
+            /**
+             * Product deleted.
+             *
+             * @body array{data: array{}, message: string}
+             */
             return $this->success(
                 message: 'Product deleted successfully',
             );
