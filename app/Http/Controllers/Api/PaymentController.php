@@ -13,12 +13,22 @@
     {
         use ApiResponse;
 
+        /**
+         * Charge an order
+         *
+         * Owner or admin. Returns 422 if the order has already been processed.
+         */
         public function charge(Order $order, PaymentService $paymentService): JsonResponse
         {
             $this->authorize('view', $order);
 
             $payment = $paymentService->charge($order->payments()->latest()->first());
 
+            /**
+             * Payment processed.
+             *
+             * @body array{data: PaymentResource, message: string}
+             */
             return $this->success(
                 new PaymentResource($payment),
                 'Payment processed successfully'
