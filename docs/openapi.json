@@ -19,16 +19,68 @@
         "/v1/admin/coupons": {
             "get": {
                 "operationId": "coupons.index",
+                "description": "Admin only. Newest first, 15 per page.",
+                "summary": "List coupons",
                 "tags": [
                     "AdminCoupon"
                 ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of coupons.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -40,6 +92,8 @@
             },
             "post": {
                 "operationId": "coupons.store",
+                "description": "Admin only. The code is normalized to upper case.",
+                "summary": "Create a coupon",
                 "tags": [
                     "AdminCoupon"
                 ],
@@ -54,12 +108,24 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Coupon created.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -73,6 +139,8 @@
         "/v1/admin/coupons/{coupon}": {
             "get": {
                 "operationId": "coupons.show",
+                "description": "Admin only.",
+                "summary": "Get a coupon",
                 "tags": [
                     "AdminCoupon"
                 ],
@@ -89,11 +157,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The coupon.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -108,6 +188,8 @@
             },
             "put": {
                 "operationId": "coupons.update",
+                "description": "Admin only. Partial update; changing `type` requires sending `value` again.",
+                "summary": "Update a coupon",
                 "tags": [
                     "AdminCoupon"
                 ],
@@ -133,11 +215,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Coupon updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -152,6 +246,8 @@
             },
             "delete": {
                 "operationId": "coupons.destroy",
+                "description": "Admin only. A coupon that was already used cannot be deleted; deactivate it instead.",
+                "summary": "Delete a coupon",
                 "tags": [
                     "AdminCoupon"
                 ],
@@ -168,11 +264,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Coupon deleted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -182,6 +295,33 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "The coupon has already been used.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -189,7 +329,7 @@
         "/v1/admin/inventories": {
             "get": {
                 "operationId": "adminInventory.index",
-                "description": "Sorted by quantity ascending, so the lowest stock comes first.",
+                "description": "Admin only. Sorted by quantity ascending, so the lowest stock comes first.",
                 "summary": "List inventories",
                 "tags": [
                     "AdminInventory"
@@ -215,11 +355,50 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of inventories.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -233,6 +412,8 @@
         "/v1/admin/products/{product}/inventory/adjust": {
             "post": {
                 "operationId": "adminInventory.adjust",
+                "description": "Admin only. `delta` is relative (positive restocks, negative writes off) so it cannot overwrite a concurrent checkout.",
+                "summary": "Adjust a product's stock",
                 "tags": [
                     "AdminInventory"
                 ],
@@ -259,11 +440,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Inventory adjusted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -273,6 +466,33 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "The adjustment would push stock below zero or below the reserved quantity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -280,6 +500,8 @@
         "/v1/auth/register": {
             "post": {
                 "operationId": "auth.register",
+                "description": "Creates the account and returns a Bearer token for it.",
+                "summary": "Register",
                 "tags": [
                     "Auth"
                 ],
@@ -294,18 +516,39 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Account created.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object"
+                                                },
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "user",
+                                                "token"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
                     }
                 },
                 "security": []
@@ -314,6 +557,8 @@
         "/v1/auth/login": {
             "post": {
                 "operationId": "auth.login",
+                "description": "Returns a Bearer token. Wrong credentials return 422.",
+                "summary": "Log in",
                 "tags": [
                     "Auth"
                 ],
@@ -329,17 +574,38 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Logged in.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object"
+                                                },
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "user",
+                                                "token"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
                     }
                 },
                 "security": []
@@ -348,16 +614,35 @@
         "/v1/auth/logout": {
             "post": {
                 "operationId": "auth.logout",
+                "description": "Revokes only the token used for this request.",
+                "summary": "Log out",
                 "tags": [
                     "Auth"
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Logged out.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -371,16 +656,29 @@
         "/v1/auth/me": {
             "get": {
                 "operationId": "auth.me",
+                "summary": "Current user",
                 "tags": [
                     "Auth"
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The authenticated user.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -394,16 +692,30 @@
         "/v1/cart": {
             "get": {
                 "operationId": "cart.index",
+                "description": "The cart is created on first access.",
+                "summary": "Get my cart",
                 "tags": [
                     "Cart"
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The current user's cart.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -415,16 +727,34 @@
             },
             "delete": {
                 "operationId": "cart.clear",
+                "summary": "Empty the cart",
                 "tags": [
                     "Cart"
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Cart emptied.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -438,6 +768,8 @@
         "/v1/cart/items": {
             "post": {
                 "operationId": "cart.storeItem",
+                "description": "Adding a product that is already in the cart increases its quantity.",
+                "summary": "Add a product to the cart",
                 "tags": [
                     "Cart"
                 ],
@@ -452,18 +784,57 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Item added.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "Not enough stock for the requested quantity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -471,6 +842,8 @@
         "/v1/cart/items/{item}": {
             "patch": {
                 "operationId": "cart.updateItem",
+                "description": "Sets the quantity to the given value (not a delta).",
+                "summary": "Change an item quantity",
                 "tags": [
                     "Cart"
                 ],
@@ -497,11 +870,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Item updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -514,11 +899,39 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "Not enough stock for the requested quantity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             },
             "delete": {
                 "operationId": "cart.destroyItem",
+                "summary": "Remove an item from the cart",
                 "tags": [
                     "Cart"
                 ],
@@ -535,11 +948,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Item removed.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -559,17 +989,68 @@
         "/v1/categories": {
             "get": {
                 "operationId": "category.index",
-                "summary": "Display a listing of the resource",
+                "description": "Public. Paginated (15 per page) and cached for 5 minutes.",
+                "summary": "List categories",
                 "tags": [
                     "Category"
                 ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of categories.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -579,7 +1060,8 @@
             },
             "post": {
                 "operationId": "category.store",
-                "summary": "Store a newly created resource in storage",
+                "description": "Admin only. The slug is generated from the name when omitted.",
+                "summary": "Create a category",
                 "tags": [
                     "Category"
                 ],
@@ -594,12 +1076,24 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Category created.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -613,7 +1107,7 @@
         "/v1/categories/{category}": {
             "get": {
                 "operationId": "category.show",
-                "summary": "Display the specified resource",
+                "summary": "Get a category",
                 "tags": [
                     "Category"
                 ],
@@ -630,11 +1124,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The category.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -647,7 +1153,8 @@
             },
             "put": {
                 "operationId": "category.update",
-                "summary": "Update the specified resource in storage",
+                "description": "Admin only.",
+                "summary": "Update a category",
                 "tags": [
                     "Category"
                 ],
@@ -674,11 +1181,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Category updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -693,7 +1212,8 @@
             },
             "delete": {
                 "operationId": "category.destroy",
-                "summary": "Remove the specified resource from storage",
+                "description": "Admin only. Soft delete.",
+                "summary": "Delete a category",
                 "tags": [
                     "Category"
                 ],
@@ -710,11 +1230,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Category deleted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -731,7 +1268,7 @@
         "/v1/checkout": {
             "post": {
                 "operationId": "checkout.store",
-                "description": "Creates the order, reserves stock, charges the payment and empties the cart in one transaction.",
+                "description": "Creates the order, reserves stock, charges the payment and empties the cart in one transaction.\nReturns 422 for an invalid coupon, or when the Idempotency-Key was already used with a different payload.",
                 "summary": "Place an order from the current cart",
                 "tags": [
                     "Checkout"
@@ -757,18 +1294,57 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "The created order (or, for a replayed request, the original order).",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "The cart is empty or a product is out of stock.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -776,16 +1352,68 @@
         "/v1/orders": {
             "get": {
                 "operationId": "order.index",
+                "description": "Newest first, 15 per page. Items and payments are not included; use the single-order endpoint for those.",
+                "summary": "List my orders",
                 "tags": [
                     "Order"
                 ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of the user's orders.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -799,6 +1427,8 @@
         "/v1/orders/{order}": {
             "get": {
                 "operationId": "order.show",
+                "description": "Owner or admin. Includes items and payments.",
+                "summary": "Get an order",
                 "tags": [
                     "Order"
                 ],
@@ -815,11 +1445,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The order with its items and payments.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -839,6 +1481,8 @@
         "/v1/orders/{order}/cancel": {
             "post": {
                 "operationId": "order.cancel",
+                "description": "Owner or admin. Allowed while the order is pending, confirmed or processing: stock is restored and a paid payment is refunded. Other statuses return 422.",
+                "summary": "Cancel an order",
                 "tags": [
                     "Order"
                 ],
@@ -855,11 +1499,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Order cancelled.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -879,6 +1535,8 @@
         "/v1/admin/orders/{order}/status": {
             "patch": {
                 "operationId": "order.updateStatus",
+                "description": "Admin only. Allowed path: confirmed, processing, shipped, delivered. Sending `cancelled` behaves like the cancel endpoint. Invalid transitions return 422.",
+                "summary": "Change an order status",
                 "tags": [
                     "Order"
                 ],
@@ -905,11 +1563,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Status updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -926,6 +1596,8 @@
         "/v1/orders/{order}/charge": {
             "post": {
                 "operationId": "payment.charge",
+                "description": "Owner or admin. Returns 422 if the order has already been processed.",
+                "summary": "Charge an order",
                 "tags": [
                     "Payment"
                 ],
@@ -942,11 +1614,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Payment processed.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1024,11 +1708,50 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of products.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1038,7 +1761,8 @@
             },
             "post": {
                 "operationId": "product.store",
-                "summary": "Store a newly created resource in storage",
+                "description": "Admin only. Also creates the inventory row (initial `quantity`, default 0) and syncs `category_ids`.",
+                "summary": "Create a product",
                 "tags": [
                     "Product"
                 ],
@@ -1053,12 +1777,24 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Product created.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1072,7 +1808,8 @@
         "/v1/products/{product}": {
             "get": {
                 "operationId": "product.show",
-                "summary": "Display the specified resource",
+                "description": "Public. Includes categories and the available stock.",
+                "summary": "Get a product",
                 "tags": [
                     "Product"
                 ],
@@ -1089,11 +1826,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "The product.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1106,7 +1855,8 @@
             },
             "put": {
                 "operationId": "product.update",
-                "summary": "Update the specified resource in storage",
+                "description": "Admin only. Categories are only changed when `category_ids` is sent.",
+                "summary": "Update a product",
                 "tags": [
                     "Product"
                 ],
@@ -1133,11 +1883,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Product updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1152,7 +1914,8 @@
             },
             "delete": {
                 "operationId": "product.destroy",
-                "summary": "Remove the specified resource from storage",
+                "description": "Admin only. Soft delete; existing orders keep their price and name snapshots.",
+                "summary": "Delete a product",
                 "tags": [
                     "Product"
                 ],
@@ -1169,11 +1932,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Product deleted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1190,6 +1970,8 @@
         "/v1/products/{product}/reviews": {
             "get": {
                 "operationId": "review.index",
+                "description": "Newest first, 15 per page.",
+                "summary": "List a product's reviews",
                 "tags": [
                     "Review"
                 ],
@@ -1202,15 +1984,63 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "A page of reviews.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1225,6 +2055,8 @@
             },
             "post": {
                 "operationId": "review.store",
+                "description": "Only customers who bought the product, and only once per product (otherwise 403). Updates the product's average rating.",
+                "summary": "Review a product",
                 "tags": [
                     "Review"
                 ],
@@ -1250,12 +2082,24 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Review submitted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1275,6 +2119,7 @@
         "/v1/reviews/{review}": {
             "patch": {
                 "operationId": "review.update",
+                "summary": "Edit my review",
                 "tags": [
                     "Review"
                 ],
@@ -1301,11 +2146,23 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Review updated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1323,6 +2180,7 @@
             },
             "delete": {
                 "operationId": "review.destroy",
+                "summary": "Delete my review",
                 "tags": [
                     "Review"
                 ],
@@ -1339,11 +2197,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Review deleted.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 0,
+                                            "maxItems": 0
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
                                 }
                             }
                         }
@@ -1834,36 +2709,6 @@
             }
         },
         "responses": {
-            "ValidationException": {
-                "description": "Validation error",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "description": "Errors overview."
-                                },
-                                "errors": {
-                                    "type": "object",
-                                    "description": "A detailed description of each field that failed validation.",
-                                    "additionalProperties": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "required": [
-                                "message",
-                                "errors"
-                            ]
-                        }
-                    }
-                }
-            },
             "AuthenticationException": {
                 "description": "Unauthenticated",
                 "content": {
