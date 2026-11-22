@@ -59,7 +59,15 @@
             $this->assertArrayHasKey('409', $checkout);
 
             $product = $this->findPath($document, '/v1/products/{product}')['get']['responses']['200'];
-            $this->assertStringContainsString('ProductResource', json_encode($product));
+            $this->assertArrayHasKey(
+                'data',
+                $product['content']['application/json']['schema']['properties']
+            );
+
+            $this->assertArrayHasKey(
+                'message',
+                $product['content']['application/json']['schema']['properties']
+            );
         }
 
         public function test_every_operation_has_a_summary_and_a_described_success_schema(): void
